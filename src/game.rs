@@ -11,6 +11,8 @@ pub mod game {
             println!("{}", self.name);
 
             let mut err = "";
+
+
             let mut player = String::new();
 
             let random_num = rng.gen_range(1..=2);
@@ -23,7 +25,8 @@ pub mod game {
 
 
             loop {
-                print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+                print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // clears console
+
 
                 if player == "крестик" {
                     player = "нолик".to_string();
@@ -66,10 +69,58 @@ pub mod game {
                     }
                     Err(e) => println!("Ошибка - {}", e)
                 }
+
                 err = "";
+                let current_player = match player.as_str() {
+                    "нолик" => "[o]",
+                    "крестик" => "[x]",
+                    _ => {
+                        println!("неизвестный игрок");
+                        return
+                    }
+                };
 
+                match self.calc_winner(&map, current_player.to_string()) {
+                    true => {
+                        println!("В ЭТОЙ ИГРЕ ПОБЕДИЛИ {}И", player.to_uppercase());
+                        return
+                    }
+                    false => {}
+                };
 
+                if map.iter().all(|&row| row.iter().all(|&cell| cell != "[ ]")) {
+                    println!("НИЧЬЯ");
+                    return
+                }
             }
+        }
+
+        fn calc_winner(&self, map: &[[&str; 3]; 3], current_player: String) -> bool {
+            // Проверка по горизонтали
+            for row in map.iter() {
+                if row.iter().all(|&cell| cell == current_player) {
+                    return true;
+                }
+            }
+
+            // Проверка по вертикали
+            for col in 0..3 {
+                if (0..3).all(|row| map[row][col] == current_player) {
+                    return true;
+                }
+            }
+
+            // Проверка по диагонали (левая верхняя - правая нижняя)
+            if (0..3).all(|i| map[i][i] == current_player) {
+                return true;
+            }
+
+            // Проверка по диагонали (левая нижняя - правая верхняя)
+            if (0..3).all(|i| map[i][2 - i] == current_player) {
+                return true;
+            }
+
+            false
         }
 
     }
